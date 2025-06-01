@@ -36,7 +36,9 @@
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            padding: 20px;
+            padding: 20px; /* Default padding for top, left, right */
+            /* Adjusted bottom padding: 20px (original space) + 50px (ad height) + 10px (buffer/ad container padding) = 80px */
+            padding-bottom: 80px; 
             overflow-x: hidden;
             text-align: center;
         }
@@ -52,6 +54,7 @@
             width: 100%;
             max-width: 450px; /* Max width for content */
             animation: fadeInPage 1s ease-out;
+            /* z-index: 1; /* Ensure content is below ad overlay if needed, though fixed positioning handles this mostly */
         }
 
         @keyframes fadeInPage {
@@ -216,10 +219,31 @@
             background: rgba(255, 255, 255, 0.25);
         }
 
+        /* Ad Container CSS */
+        #bottomAdContainer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center; /* Centers the ad (which is 320px wide) */
+            align-items: center;
+            height: auto; /* Ad script defines its height (50px), container wraps it */
+            padding: 5px 0; /* Adds 5px padding top/bottom around the ad iframe */
+            /* background-color: rgba(0,0,0,0.1); /* Optional: for visualizing the ad bar */
+            z-index: 9999; /* Ensures it's on the topmost layer */
+        }
+
+
         /* Small device adjustments */
         @media (max-width: 480px) {
             .container {
                 padding: 20px;
+                /* margin-bottom: 60px; /* Add space for ad if body padding isn't enough or for specific control */
+            }
+            body {
+                 /* If you want different base padding on small screens, adjust here first, then ensure padding-bottom is sufficient */
+                 /* e.g., padding: 10px; padding-bottom: 70px; */
             }
             #eidGif {
                 max-width: 220px;
@@ -262,6 +286,20 @@
         </div>
     </div>
 
+    <!-- Ad Container -->
+    <div id="bottomAdContainer">
+        <script type="text/javascript">
+            atOptions = {
+                'key' : '36529b7a6065d1d31d4c0bfa081fc415',
+                'format' : 'iframe',
+                'height' : 50,
+                'width' : 320,
+                'params' : {}
+            };
+        </script>
+        <script type="text/javascript" src="//www.highperformanceformat.com/36529b7a6065d1d31d4c0bfa081fc415/invoke.js"></script>
+    </div>
+
     <script>
         const nameInput = document.getElementById('nameInput');
         const generateButton = document.getElementById('generateButton');
@@ -272,40 +310,31 @@
 
         let isMuted = false; // Track mute state
 
-        // Attempt to play background music on load
-        // Browsers often block autoplay unless user interacts or it's muted.
-        // We'll start it muted and allow user to unmute, or let it try to play.
-        backgroundMusic.volume = 0.5; // Set a default volume (0.0 to 1.0)
+        backgroundMusic.volume = 0.5;
         
-        // Try to play, if fails, it's likely due to autoplay policy
         backgroundMusic.play().then(() => {
             console.log("Audio playing.");
             muteButton.textContent = 'Mute 🔇';
         }).catch(error => {
             console.log("Autoplay prevented by browser. User interaction required or music will start muted.");
-            // If autoplay is prevented, we might want to ensure it's 'muted' from our logic's POV too.
-            // However, the `autoplay` attribute itself might be sufficient.
-            // Let's ensure the button text reflects an unplayed state if it's not actually playing.
             if (backgroundMusic.paused) {
-                 muteButton.textContent = 'Play Music ▶️'; // Or 'Unmute 🔇' if we decide to mute it by default
+                 muteButton.textContent = 'Play Music ▶️';
             }
         });
 
-
         muteButton.addEventListener('click', () => {
-            if (backgroundMusic.paused) { // If paused, play it
+            if (backgroundMusic.paused) {
                 backgroundMusic.play().then(() => {
                     backgroundMusic.muted = false;
                     isMuted = false;
                     muteButton.textContent = 'Mute 🔇';
                 }).catch(error => console.error("Error playing audio:", error));
-            } else { // If playing, toggle mute
+            } else {
                 isMuted = !isMuted;
                 backgroundMusic.muted = isMuted;
                 muteButton.textContent = isMuted ? 'Unmute 🎵' : 'Mute 🔇';
             }
         });
-
 
         generateButton.addEventListener('click', () => {
             const name = nameInput.value.trim();
@@ -318,32 +347,29 @@
                 const message = `Eid Mubarak from ${name}! 🎉 Wishing you happiness and blessings!`;
                 customMessageDiv.textContent = message;
                 customMessageDiv.style.borderColor = "var(--accent-gold)";
-                customMessageDiv.style.color = "var(--text-color)"; // Reset color
+                customMessageDiv.style.color = "var(--text-color)"; 
 
-                // Re-trigger animation for message
                 customMessageDiv.style.animation = 'none';
-                void customMessageDiv.offsetWidth; // Trigger reflow
+                void customMessageDiv.offsetWidth; 
                 customMessageDiv.style.animation = 'slideInMessage 0.5s ease-out';
             }
-            customMessageDiv.style.display = 'block'; // Show message div
+            customMessageDiv.style.display = 'block'; 
 
             if (name !== "") {
-                whatsappButton.style.display = 'inline-flex'; // Show WhatsApp button
-                // Re-trigger animation for WhatsApp button
+                whatsappButton.style.display = 'inline-flex'; 
                 whatsappButton.style.animation = 'none';
-                void whatsappButton.offsetWidth; // Trigger reflow
+                void whatsappButton.offsetWidth; 
                 whatsappButton.style.animation = 'popInButton 0.5s ease-out';
             }
         });
 
         whatsappButton.addEventListener('click', () => {
             const currentCustomMessage = customMessageDiv.textContent;
-            let messageToShare = "Eid Mubarak! 🎉 Wishing you happiness and blessings!"; // Default
+            let messageToShare = "Eid Mubarak! 🎉 Wishing you happiness and blessings!"; 
 
             if (currentCustomMessage && !currentCustomMessage.startsWith("⚠️")) {
                 messageToShare = currentCustomMessage;
             } else {
-                 // If no custom message generated or it's an error, try to use name if available
                 const name = nameInput.value.trim();
                 if (name) {
                     messageToShare = `Eid Mubarak from ${name}! 🎉 Wishing you happiness and blessings!`;
@@ -351,17 +377,13 @@
             }
             
             const siteUrl = window.location.href;
-            // Make sure to include the site link if you want people to visit the page.
             const fullShareMessage = `${messageToShare}\n\nCreate your own greeting: ${siteUrl}`;
             const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(fullShareMessage)}`;
             
             window.open(whatsappUrl, '_blank');
         });
 
-        // Initial setup for mute button text if music is already playing or muted by default policy
-        // This handles the case where 'autoplay' works but starts muted, or if it doesn't play at all
-        // window.onload is a bit late, DOMContentLoaded would be better but for simplicity:
-        setTimeout(() => { // Give a slight delay for audio element to initialize
+        setTimeout(() => { 
             if (backgroundMusic.paused && !backgroundMusic.ended) {
                 muteButton.textContent = 'Play Music ▶️';
             } else if (backgroundMusic.muted) {
@@ -371,10 +393,9 @@
                 muteButton.textContent = 'Mute 🔇';
                 isMuted = false;
             }
-        }, 100); // 100ms delay
+        }, 100);
 
     </script>
 
 </body>
 </html>
-
